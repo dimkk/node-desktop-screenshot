@@ -1,6 +1,6 @@
 {
   "name": "@senzil/desktop-screenshot",
-  "version": "1.0.2",
+  "version": "1.0.2-release.27",
   "description": "Cross-platform screenshot module, using external tools",
   "license": "MIT",
   "author": {
@@ -23,8 +23,14 @@
     "jimp": "0.2.x"
   },
   "main": "module.js",
+  "scripts": {
+    "lint": "eslint .",
+    "prepublishOnly": "npm run lint",
+    "release": "npm version --no-git-tag-version prerelease && git add ."
+  },
   "devDependencies": {
-    "eslint": "^4.9.0"
+    "eslint": "^4.9.0",
+    "pre-commit": "^1.2.2"
   },
   "os": [
     "darwin",
