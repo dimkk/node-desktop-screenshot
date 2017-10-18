@@ -1,6 +1,4 @@
-module.exports = function() {
-  return new Screenshot(arguments)
-}
+'use strict'
 
 var path = require('path')
 var jimp = require('jimp')
@@ -8,33 +6,49 @@ var fs = require('fs')
 var capture = require('./capture')
 
 function Screenshot(args) {
+
   var config = this.parseArgs(args)
   var self = this
 
-  if (capture[process.platform]){
-    capture[process.platform](config.options, function(error, options) {
-      // TODO add option for string, rather than file
-      if (error){
-        return handleCallback(error)
-      }
+  return new Promise(function(resolve, reject) {
 
-      if (!options.output){
-        return config.callback(new Error('No image taken.'))
-      }
+    if (capture[process.platform]){
+      capture[process.platform](config.options, function(error, options) {
+        // TODO add option for string, rather than file
+        if (error){
+          return reject(error)
+        }
 
-      self.processImage(options.output, options.output, options, handleCallback)
-    })
-  } else {
-    handleCallback(new Error('Unsupported platform ' + process.platform))
-  }
+        if (!options.output){
+          return reject(new Error('No image taken.'))
+        }
 
-  function handleCallback(error, success) {
-    if (typeof config.callback === 'function') {
-      if (typeof success === 'undefined')
-        success = !error
-      config.callback(error, success)
+        self.processImage(options.output, options.output, options, function(error, success) {
+          if (error){
+            return reject(error)
+          }
+
+          resolve(success)
+        })
+      })
+    } else {
+      reject(new Error('Unsupported platform ' + process.platform))
     }
-  }
+  })
+    .then(function(success){
+      if (config.callback) {
+        config.callback(null, success)
+      }
+
+      return success
+    })
+    .catch(function(e) {
+      if (config.callback) {
+        return config.callback(e)
+      }
+
+      throw e
+    })
 }
 
 Screenshot.prototype.processImage = function(input, output, options, callback) {
@@ -117,3 +131,5 @@ Screenshot.prototype.parseArgs = function(args) {
 
   return config
 }
+
+exports = module.exports = Screenshot
