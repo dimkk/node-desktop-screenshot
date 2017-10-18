@@ -1,6 +1,6 @@
 {
   "name": "@senzil/desktop-screenshot",
-  "version": "1.0.2-release.29",
+  "version": "1.0.2-release.30",
   "description": "Cross-platform screenshot module, using external tools",
   "license": "MIT",
   "author": {

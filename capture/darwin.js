@@ -23,6 +23,10 @@ module.exports = function(options, callback) {
       output
     ]
 
+    if (!options.multi) {
+      args.pop('-m')
+    }
+
     var captureChild = childProcess.spawn(cmd, args)
 
     captureChild.on('close', function(error) {
