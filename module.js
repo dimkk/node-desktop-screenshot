@@ -14,14 +14,18 @@ function Screenshot(args) {
   if (capture[process.platform]){
     capture[process.platform](config.options, function(error, options) {
       // TODO add option for string, rather than file
-      if (error)
-        handleCallback(error)
-      else if (!error) {
-        self.processImage(options.output, options.output, options, handleCallback)
+      if (error){
+        return handleCallback(error)
       }
+
+      if (!options.output){
+        return config.callback(new Error('No image taken.'))
+      }
+
+      self.processImage(options.output, options.output, options, handleCallback)
     })
   } else {
-    handleCallback('unsupported_platform')
+    handleCallback(new Error('Unsupported platform ' + process.platform))
   }
 
   function handleCallback(error, success) {
@@ -34,10 +38,21 @@ function Screenshot(args) {
 }
 
 Screenshot.prototype.processImage = function(input, output, options, callback) {
+  if (!input){
+    return callback(new Error('No image to process.'))
+  }
   if (typeof options.width !== 'number' && typeof  options.height !== 'number' && typeof options.quality !== 'number') // no processing required
     callback(null)
   else {
     new jimp(input, function (err, image) {
+
+      if (err){
+        return callback(err)
+      }
+      if (!image){
+        return callback(new Error('No image received from jimp.'))
+      }
+
       if (typeof options.width === 'number')
         var resWidth = Math.floor(options.width)
       if (typeof options.height === 'number')
@@ -96,11 +111,9 @@ Screenshot.prototype.parseArgs = function(args) {
     }
   }
 
-  if (typeof file === 'string')
-    config.options.output = file
-
-  if (typeof config.options.output === 'string')
-    config.options.output = path.normalize(config.options.output)
+  if (typeof file === 'string'){
+    config.options.output = path.normalize(file)
+  }
 
   return config
 }

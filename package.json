@@ -25,5 +25,11 @@
   "main": "module.js",
   "devDependencies": {
     "eslint": "^4.9.0"
-  }
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "arm",
+    "win32"
+  ]
 }
