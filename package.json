@@ -1,6 +1,6 @@
 {
   "name": "@senzil/desktop-screenshot",
-  "version": "1.0.2-release.27",
+  "version": "1.0.2-release.29",
   "description": "Cross-platform screenshot module, using external tools",
   "license": "MIT",
   "author": {
@@ -28,14 +28,30 @@
     "prepublishOnly": "npm run lint",
     "release": "npm version --no-git-tag-version prerelease && git add ."
   },
+  "pre-commit": [
+    "release"
+  ],
   "devDependencies": {
     "eslint": "^4.9.0",
     "pre-commit": "^1.2.2"
   },
+  "keywords": [
+    "screenshot",
+    "snatshot",
+    "desktop",
+    "scrot",
+    "nircmd",
+    "crop",
+    "rezise"
+  ],
   "os": [
     "darwin",
     "linux",
-    "arm",
     "win32"
+  ],
+  "cpu": [
+    "x64",
+    "x86",
+    "arm"
   ]
 }
