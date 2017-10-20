@@ -1,3 +1,5 @@
+*Original fork from https://github.com/johnvmt/node-desktop-screenshot*
+
 # node-desktop-screenshot #
 Take a screenshot of the computer on which Node is running, using platform-specific external tools included with the package
 
@@ -8,9 +10,16 @@ Linux version uses scrot
 
 ## Available Options ##
 
+- buffered: return a Buffer insted of save a file
+- multi: enable snapshot of all present displays (display current)
 - quality: JPEG quality (0 to 100)
 - width: use in conjunction with height, or by itself to maintain aspect ratio
 - height: use in conjunction with width, or by itself to maintain aspect ratio
+
+## Returns ##
+A promise (you can use a callback if you want)
+if you set buffered:true you get a Buffer
+if you save a file then you get the path
 
 ## Examples ##
 
@@ -47,8 +56,4 @@ Linux version uses scrot
     });
     
 ## TODOs ##
-
-- Tests
-- Multi-screen support
 - Cropping
-- Return contents of image, rather than writing file

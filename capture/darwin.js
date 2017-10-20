@@ -1,11 +1,10 @@
 module.exports = function(options, callback) {
-  var path = require('path')
   var childProcess = require('child_process')
 
   // due to bug in jpgjs processing OSX jpg images https://github.com/notmasteryet/jpgjs/issues/34
   // when requesting JPG capture as PNG, so JIMP can read it
   /* the previuos error seems already corrected */
-  capture(options.output, callbackReturn) // when jpegjs bug fixed, only need this line
+  capture(options.temp, callbackReturn) // when jpegjs bug fixed, only need this line
 
   function callbackReturn(error) {
     // called from capture
@@ -18,13 +17,13 @@ module.exports = function(options, callback) {
     var args = [
       // will create PNG by default
       '-t',
-      path.extname(output).toLowerCase().substring(1),
+      options.extension,
       '-x',
       output
     ]
 
     if (!options.multi) {
-      args.pop('-m')
+      args.unshift('-m')
     }
 
     var captureChild = childProcess.spawn(cmd, args)

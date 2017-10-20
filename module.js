@@ -4,60 +4,83 @@ var path = require('path')
 var jimp = require('jimp')
 var fs = require('fs')
 var capture = require('./capture')
+var tmp = require('tmp')
 
-function Screenshot(args) {
+var validext = ['jpg', 'jpeg', 'png', 'bmp']
 
-  var config = this.parseArgs(args)
-  var self = this
+function Screenshot() {
 
-  return new Promise(function(resolve, reject) {
+  var config = parseArgs(Array.prototype.slice.call(arguments))
 
-    if (capture[process.platform]){
-      capture[process.platform](config.options, function(error, options) {
-        // TODO add option for string, rather than file
-        if (error){
-          return reject(error)
-        }
+  function parseArgs(args) {
 
-        if (!options.output){
-          return reject(new Error('No image taken.'))
-        }
-
-        self.processImage(options.output, options.output, options, function(error, success) {
-          if (error){
-            return reject(error)
-          }
-
-          resolve(success)
-        })
-      })
-    } else {
-      reject(new Error('Unsupported platform ' + process.platform))
+    var config = {
+      callback: null,
+      options: {
+        buffered: false,
+        extension: 'png',
+        multi: false,
+        noprocess: false,
+        output: ''
+      }
     }
-  })
-    .then(function(success){
-      if (config.callback) {
-        config.callback(null, success)
+
+    for (var index in args) {
+      switch (typeof args[index]) {
+      case 'string':
+        config.options.output = path.normalize(args[index])
+        break
+      case 'function':
+        config.callback = args[index]
+        break
+      case 'object':
+        config.options = Object.assign(config.options, args[index])
+        break
       }
+    }
 
-      return success
-    })
-    .catch(function(e) {
-      if (config.callback) {
-        return config.callback(e)
-      }
-
-      throw e
-    })
-}
-
-Screenshot.prototype.processImage = function(input, output, options, callback) {
-  if (!input){
-    return callback(new Error('No image to process.'))
+    return config
   }
-  if (typeof options.width !== 'number' && typeof  options.height !== 'number' && typeof options.quality !== 'number') // no processing required
-    callback(null)
-  else {
+
+  function checkConfig(){
+    if (!config.options.output) {
+      throw new Error('there is not configured output')
+    }
+
+    config.options.extension = path.extname(config.options.output).toLowerCase().substring(1) || 'png'
+    if (validext.indexOf(config.options.extension) === -1) {
+      throw new Error('The library only support png, jpeg and bpm output formats')
+    }
+
+    if (config.options.width != null && typeof config.options.width !== 'number'){
+      throw new Error('the width must be a number or nothing')
+    }
+
+    if (config.options.height != null && typeof config.options.height !== 'number'){
+      throw new Error('the height must be a number or nothing')
+    }
+
+    if (config.options.quality != null && (typeof config.options.quality !== 'number' || config.options.quality < 0 || config.options.quality >100)){
+      throw new Error('the quality must be a number beetween 0 to 100 or nothing')
+    }
+
+    if (!capture.hasOwnProperty(process.platform)){
+      throw new  Error('Unsupported platform ' + process.platform)
+    }
+
+    //there is no modification
+    if (!config.options.width
+      && !config.options.height
+      && !config.options.quality){
+      config.options.noprocess = true
+    }
+  }
+
+  function processImage(input, output, options, callback) {
+    if (!input){
+      return callback(new Error('No image to process.'))
+    }
+
     new jimp(input, function (err, image) {
 
       if (err){
@@ -78,10 +101,13 @@ Screenshot.prototype.processImage = function(input, output, options, callback) {
         var resWidth = Math.floor(image.bitmap.width * (resHeight / image.bitmap.height))
 
       try {
-        image.resize(resWidth, resHeight)
-
-        if (typeof options.quality === 'number' && options.quality >= 0 && options.quality <= 100)
+        if (options.width || options.height) {
+          image.resize(resWidth, resHeight)
+        }
+        if (options.quality) {
           image.quality(Math.floor(options.quality)) // only works with JPEGs
+        }
+
 
         if (options.buffered){
           image.getBuffer(jimp.AUTO, function(error, buffer) {
@@ -90,12 +116,16 @@ Screenshot.prototype.processImage = function(input, output, options, callback) {
               return callback(error)
             }
 
-            fs.unlink(input, function(errorUnlink) {
-              callback(errorUnlink, buffer)
-            })
+            callback(null, buffer)
           })
         } else {
-          image.write(output, callback)
+          image.write(output, function(err){
+            if (err){
+              return callback(err)
+            }
+
+            return callback(null, output)
+          })
         }
       }
       catch (error) {
@@ -103,33 +133,74 @@ Screenshot.prototype.processImage = function(input, output, options, callback) {
       }
     })
   }
-}
 
-Screenshot.prototype.parseArgs = function(args) {
-  var config = {options: {}}
+  return new Promise(function(resolve, reject) {
 
-  for (var property in args) {
-    if (args.hasOwnProperty(property)) {
-      switch (typeof args[property]) {
-      case 'string':
-        var file = args[property]
-        break
-      case 'function':
-        config.callback = args[property]
-        break
-      case 'object':
-        if (args[property] !== null)
-          config.options = args[property]
-        break
+    checkConfig()
+
+    tmp.file({ postfix: '.' + config.options.extension, discardDescriptor: true }, function _tempFileCreated(err, path, fd, cleanupCallback) {
+      if (err) {
+        return reject(err)
       }
-    }
-  }
 
-  if (typeof file === 'string'){
-    config.options.output = path.normalize(file)
-  }
+      config.options.temp = path
 
-  return config
+      capture[process.platform](config.options, function(error, options) {
+        // TODO add option for string, rather than file
+        if (error){
+          reject(error)
+          return cleanupCallback()
+        }
+
+        if (options.noprocess) {
+          return fs.readFile(config.options.temp, function (err, data) {
+            if (err) {
+              reject(err)
+              return cleanupCallback()
+            }
+            if (!options.buffered) {
+              return fs.writeFile(config.options.output, data, function (err) {
+                if (err) {
+                  reject(err)
+                  return cleanupCallback()
+                }
+
+                resolve(config.options.output)
+                return cleanupCallback()
+              })
+            }
+
+            resolve(data)
+            return cleanupCallback()
+          })
+        }
+
+        processImage(options.temp, options.output, options, function(error, success) {
+          if (error){
+            reject(error)
+            return cleanupCallback()
+          }
+
+          resolve(success)
+          return cleanupCallback()
+        })
+      })
+    })
+  })
+    .then(function(success){
+      if (config.callback) {
+        config.callback(null, success)
+      }
+
+      return success
+    })
+    .catch(function(e) {
+      if (config.callback) {
+        return config.callback(e)
+      }
+
+      throw e
+    })
 }
 
 exports = module.exports = Screenshot

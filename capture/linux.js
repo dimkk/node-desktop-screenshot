@@ -3,10 +3,10 @@ module.exports = function(options, callback) {
   var childProcess = require('child_process')
   var path = require('path')
 
-  var args = [options.output]
+  var args = [options.temp]
 
   if (options.multi) {
-    args = ['-m', options.output]
+    args = ['-m', options.temp]
   }
 
   var scrot = childProcess.spawn(path.join(__dirname, 'bin', process.arch !== 'arm' ? 'scrot' : 'arm', 'scrot'), args)
