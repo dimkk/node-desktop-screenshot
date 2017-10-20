@@ -90,15 +90,17 @@ function Screenshot() {
         return callback(new Error('No image received from jimp.'))
       }
 
+      var resWidth, resHeight
+
       if (typeof options.width === 'number')
-        var resWidth = Math.floor(options.width)
+        resWidth = Math.floor(options.width)
       if (typeof options.height === 'number')
-        var resHeight = Math.floor(options.height)
+        resHeight = Math.floor(options.height)
 
       if (typeof resWidth === 'number' && typeof resHeight !== 'number') // resize to width, maintain aspect ratio
-        var resHeight = Math.floor(image.bitmap.height * (resWidth / image.bitmap.width))
+        resHeight = Math.floor(image.bitmap.height * (resWidth / image.bitmap.width))
       else if (typeof resHeight === 'number' && typeof resWidth !== 'number') // resize to height, maintain aspect ratio
-        var resWidth = Math.floor(image.bitmap.width * (resHeight / image.bitmap.height))
+        resWidth = Math.floor(image.bitmap.width * (resHeight / image.bitmap.height))
 
       try {
         if (options.width || options.height) {
