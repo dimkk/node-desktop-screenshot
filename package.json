@@ -1,6 +1,6 @@
 {
   "name": "@senzil/desktop-screenshot",
-  "version": "1.0.5-0",
+  "version": "1.0.6-release.37",
   "description": "Cross-platform screenshot module, using external tools",
   "license": "MIT",
   "author": {
@@ -28,7 +28,7 @@
     "test": "mocha --full-trace",
     "lint": "eslint .",
     "prepublishOnly": "npm run lint && npm run test",
-    "release": "npm version --no-git-tag-version prerelease && git add ."
+    "release": "npm version --no-git-tag-version --preid=release prerelease && git add ."
   },
   "pre-commit": [
     "release"
