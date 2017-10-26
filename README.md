@@ -15,6 +15,8 @@ Linux version uses scrot
 - quality: JPEG quality (0 to 100)
 - width: use in conjunction with height, or by itself to maintain aspect ratio
 - height: use in conjunction with width, or by itself to maintain aspect ratio
+- timestamp: use timestamp (true/false) to print datetime in screenshot. default true.
+- caption: an string to print previous to timestamp
 
 ## Returns ##
 A promise (you can use a callback if you want)

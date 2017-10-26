@@ -5,8 +5,16 @@ var jimp = require('jimp')
 var fs = require('fs')
 var capture = require('./capture')
 var tmp = require('tmp')
+var font, fontwhite
 
 var validext = ['jpg', 'jpeg', 'png', 'bmp']
+
+jimp.loadFont(jimp.FONT_SANS_16_BLACK).then(function (_font) {
+  font = _font
+})
+jimp.loadFont(jimp.FONT_SANS_16_WHITE).then(function (_font) {
+  fontwhite = _font
+})
 
 function Screenshot() {
 
@@ -18,10 +26,12 @@ function Screenshot() {
       callback: null,
       options: {
         buffered: false,
+        caption: '',
         extension: 'png',
         multi: false,
         noprocess: false,
-        output: ''
+        output: '',
+        timestamp: true
       }
     }
 
@@ -71,7 +81,9 @@ function Screenshot() {
     //there is no modification
     if (!config.options.width
       && !config.options.height
-      && !config.options.quality){
+      && !config.options.quality
+      && !config.options.timestamp
+      && !config.options.caption){
       config.options.noprocess = true
     }
   }
@@ -110,6 +122,26 @@ function Screenshot() {
           image.quality(Math.floor(options.quality)) // only works with JPEGs
         }
 
+
+        if (options.timestamp || options.caption) {
+          var caption = options.caption.toString()
+          if (options.timestamp && options.caption) {
+            caption += '\r\n - '
+          }
+          caption += options.timestamp ? new Date().toUTCString() : ''
+          image.print(fontwhite, 11, 11, caption, image.bitmap.width - 20) //shadow
+          image.print(font, 10, 10, caption, image.bitmap.width - 20)
+        }
+
+        /* USE THIS WITH NEXT JIMP VERSION >0.2.28
+        if (options.timestamp) {
+          image.print(font, 10, 10, {
+            alignmentX: jimp.HORIZONTAL_ALIGN_RIGHT,
+            alignmentY: jimp.VERTICAL_ALIGN_BOTTOM,
+            text: new Date().toUTCString()
+          })
+        }
+        */
 
         if (options.buffered){
           image.getBuffer(jimp.AUTO, function(error, buffer) {
@@ -177,15 +209,21 @@ function Screenshot() {
           })
         }
 
-        processImage(options.temp, options.output, options, function(error, success) {
-          if (error){
-            reject(error)
-            return cleanupCallback()
-          }
+        try {
+          processImage(options.temp, options.output, options, function(error, success) {
+            if (error){
+              reject(error)
+              return cleanupCallback()
+            }
 
-          resolve(success)
+            resolve(success)
+            return cleanupCallback()
+          })
+        }
+        catch (e) {
+          reject(e)
           return cleanupCallback()
-        })
+        }
       })
     })
   })

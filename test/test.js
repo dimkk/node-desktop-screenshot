@@ -69,14 +69,14 @@ describe('Screenshot()', function() {
   describe('takesnapshot', function() {
     it('get full screen snapshot PNG', function() {
       var file = __dirname + '/fullscreen.png'
-      return screenshot({output: file})
+      return screenshot({output: file, caption: 'image with caption'})
         .then(checkFile(file)).should.eventually.be.instanceof(fs.Stats)
     })
     it('get full screen snapshot JPG', function() {
       var file = __dirname + '/fullscreen.jpg'
       return screenshot({output: file})
         .then(checkFile(file)).should.eventually.be.instanceof(fs.Stats)
-    })
+    }).timeout(3000)
     it('get full screen snapshot BMP', function() {
       var file = __dirname + '/fullscreen.bmp'
       return screenshot({output: file})
@@ -84,7 +84,7 @@ describe('Screenshot()', function() {
     })
     it('get full screen snapshot PNG 240X320', function() {
       var file = __dirname + '/fullscreen240X320.png'
-      return screenshot({output: file, width:320, height: 240})
+      return screenshot({output: file, width:320, height: 240, caption: 'image with caption'})
         .then(checkFile(file)).should.eventually.be.instanceof(fs.Stats)
     })
     it('get full screen snapshot BMP 240X320', function() {
@@ -102,7 +102,7 @@ describe('Screenshot()', function() {
   })
 })
 
-if (process.platform !== 'darwin') {
+if (process.platform === 'darwin') {
   describe('darwin', function() {
     // due to bug in jpgjs processing OSX jpg images https://github.com/notmasteryet/jpgjs/issues/34
     // when requesting JPG capture as PNG, so JIMP can read it
@@ -111,11 +111,11 @@ if (process.platform !== 'darwin') {
       var file = __dirname + '/fullscreen.jpg'
       return screenshot({output: file})
         .then(checkFile(file)).should.eventually.be.instanceof(fs.Stats)
-    })
+    }).timeout(3000)
     //it('get snapshot BMP with rezise process throw an error - bmp top-down and none-alpha', function() {
-    //  var file = __dirname + '/fullscreen240X320.bmp'
+    //  var file = __dirname + '/fullscreen240X320-darwin.bmp'
     //  return screenshot({output: file, width:320, height: 240})
-    //    .should.be.rejectedWith(Error, 'bit decode error:RangeError: "size" argument must not be larger than 2147483647')
+    //    .should.be.rejectedWith(TypeError, 'Cannot read property \'143404\' of undefined')
     //})
   })
 }
