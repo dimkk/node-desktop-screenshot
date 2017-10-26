@@ -57,7 +57,7 @@ describe('Screenshot()', function() {
         .should.eventually.be.instanceof(Buffer)
     })
     it('get a buffer of BMP', function() {
-      return screenshot({output: tempfile + '.bmp', buffered: true})
+      return screenshot({output: tempfile + '.bmp', buffered: true, timestamp: false})
         .should.eventually.be.instanceof(Buffer)
     })
     it('get buffer but not file', function() {
@@ -79,7 +79,7 @@ describe('Screenshot()', function() {
     }).timeout(3000)
     it('get full screen snapshot BMP', function() {
       var file = __dirname + '/fullscreen.bmp'
-      return screenshot({output: file})
+      return screenshot({output: file, timestamp: false})
         .then(checkFile(file)).should.eventually.be.instanceof(fs.Stats)
     })
     it('get full screen snapshot PNG 240X320', function() {
