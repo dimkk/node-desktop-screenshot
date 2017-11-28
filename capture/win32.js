@@ -4,11 +4,17 @@ module.exports = function(options, callback) {
   var path = require('path')
 
   var args = ['savescreenshot', options.temp]
+  var spawnOptions = {}
+
   if (options.multi) {
     args = ['savescreenshotfull', options.temp]
   }
 
-  var nircmd = childProcess.spawn(path.join(__dirname, 'bin', 'nircmd.exe'), args)
+  if (options.env) {
+    spawnOptions.env = options.env
+  }
+
+  var nircmd = childProcess.spawn(path.join(__dirname, 'bin', 'nircmd.exe'), args, spawnOptions)
 
   nircmd.on('close', function(code) {
     if (code !== 0) {

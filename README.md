@@ -10,13 +10,14 @@ Linux version uses scrot
 
 ## Available Options ##
 
-- buffered: return a Buffer insted of save a file
-- multi: enable snapshot of all present displays (display current)
-- quality: JPEG quality (0 to 100)
-- width: use in conjunction with height, or by itself to maintain aspect ratio
-- height: use in conjunction with width, or by itself to maintain aspect ratio
+- buffered: return a Buffer insted of save a file.
+- multi: enable snapshot of all present displays (display current).
+- quality: JPEG quality (0 to 100).
+- width: use in conjunction with height, or by itself to maintain aspect ratio.
+- height: use in conjunction with width, or by itself to maintain aspect ratio.
 - timestamp: use timestamp (true/false) to print datetime in screenshot. default true.
-- caption: an string to print previous to timestamp
+- caption: an string to print previous to timestamp.
+- env: environment key/value variables to run the screenshot process.
 
 ## Returns ##
 A promise (you can use a callback if you want)

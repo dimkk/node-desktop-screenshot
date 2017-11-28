@@ -4,12 +4,17 @@ module.exports = function(options, callback) {
   var path = require('path')
 
   var args = [options.temp]
+  var spawnOptions = {}
 
   if (options.multi) {
     args = ['-m', options.temp]
   }
 
-  var scrot = childProcess.spawn(path.join(__dirname, 'bin', process.arch !== 'arm' ? 'scrot' : 'arm', 'scrot'), args)
+  if (options.env) {
+    spawnOptions.env = options.env
+  }
+
+  var scrot = childProcess.spawn(path.join(__dirname, 'bin', process.arch !== 'arm' ? 'scrot' : 'arm', 'scrot'), args, spawnOptions)
   scrot.on('close', function(code) {
     if (code !== 0) {
       return callback('scrot failed', null)

@@ -21,12 +21,17 @@ module.exports = function(options, callback) {
       '-x',
       output
     ]
+    var spawnOptions = {}
 
     if (!options.multi) {
       args.unshift('-m')
     }
 
-    var captureChild = childProcess.spawn(cmd, args)
+    if (options.env) {
+      spawnOptions.env = options.env
+    }
+
+    var captureChild = childProcess.spawn(cmd, args, spawnOptions)
 
     captureChild.on('close', function(error) {
       if (error)
